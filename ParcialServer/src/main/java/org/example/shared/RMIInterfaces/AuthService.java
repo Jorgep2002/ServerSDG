@@ -13,4 +13,7 @@ public interface AuthService extends Remote {
     boolean addUserToGroup(int groudId,String userId) throws RemoteException;
     List<GroupEntity> getAllGroups() throws RemoteException;
     List<UserEntity> getUsersByGroupId(int groupId) throws RemoteException;
+    List<UserEntity> getAllUsers() throws RemoteException;
+    List<GroupEntity> getGroupsByUserId(String userId) throws RemoteException;
+    boolean createUser(UserEntity user) throws RemoteException;
 }

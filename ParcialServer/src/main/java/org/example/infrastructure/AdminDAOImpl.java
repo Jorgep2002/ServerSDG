@@ -68,8 +68,8 @@ public class AdminDAOImpl {
                 List<UserEntity> userList = new ArrayList<>();
                 while (rs.next()) {
                     UserEntity user = new UserEntity(
-                            rs.getString("id"),
-                            rs.getString("password")
+                            rs.getString("id_usuario"),
+                            rs.getString("usu_contrasena")
                     );
                     userList.add(user);
                 }
@@ -229,4 +229,34 @@ public class AdminDAOImpl {
         }
     }
 
+
+    public List<GroupEntity> getGroupsByUserId(String userId) throws RemoteException {
+        List<GroupEntity> groupList = new ArrayList<>();
+        String sql = "SELECT g.id_grupo, g.grp_nombre, g.grp_descripcion " +
+                "FROM grupo g " +
+                "JOIN grupo_compartido gc ON g.id_grupo = gc.fk_id_grupo " +
+                "WHERE gc.fk_id_usuario = ?";
+
+        try (Connection conn = mysqlConn.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, userId); // Establece el ID del usuario
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    GroupEntity group = new GroupEntity(
+                            rs.getInt("id_grupo"),
+                            rs.getString("grp_nombre"),
+                            rs.getString("grp_descripcion")
+                    );
+                    groupList.add(group);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RemoteException("Error al obtener los grupos del usuario", e);
+        }
+
+        return groupList;
+    }
 }

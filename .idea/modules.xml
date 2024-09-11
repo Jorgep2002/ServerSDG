@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/ParcialServer.iml" filepath="$PROJECT_DIR$/.idea/ParcialServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ParcialServer/ParcialServer.iml" filepath="$PROJECT_DIR$/ParcialServer/ParcialServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/ServerSDG.iml" filepath="$PROJECT_DIR$/.idea/ServerSDG.iml" />
     </modules>
   </component>
 </project>

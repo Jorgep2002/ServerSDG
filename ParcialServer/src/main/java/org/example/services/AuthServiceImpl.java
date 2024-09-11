@@ -107,5 +107,38 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService 
             System.out.println("Error al obtener todos los grupos: " + e.getMessage());
             throw new RemoteException("Error al obtener todos los grupos", e);
         }
-}
+    }
+
+    public List<UserEntity> getAllUsers() throws RemoteException {
+
+        try{
+
+            List<UserEntity> users = adminDAO.getAllUsers();
+
+            return users;
+
+        }catch (RemoteException e){
+            System.out.println("Error al obtener todos los usuarios: " + e.getMessage());
+            throw new RemoteException("Error al obtener todos los usuarios", e);
+        }
+
+    }
+    public List<GroupEntity> getGroupsByUserId(String userId) throws RemoteException {
+        try {
+            System.out.println(adminDAO.getGroupsByUserId(userId));
+            return adminDAO.getGroupsByUserId(userId);
+        } catch (RemoteException e) {
+            System.out.println("Error al obtener los grupos del usuario: " + e.getMessage());
+            throw new RemoteException("Error al obtener los grupos del usuario", e);
+        }
+    }
+    public boolean createUser(UserEntity user) throws RemoteException{
+        try {;
+            return adminDAO.createUser(user);
+        } catch (RemoteException e) {
+            System.out.println("Error al crear usuario: " + e.getMessage());
+            throw new RemoteException("Error al crear usuario", e);
+        }
+    }
+
 }
