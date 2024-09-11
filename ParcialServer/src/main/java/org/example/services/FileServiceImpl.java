@@ -16,7 +16,7 @@ public class FileServiceImpl extends UnicastRemoteObject implements FileService 
     @Override
     public void uploadFile(String filename, byte[] fileData) throws RemoteException, IOException {
         // Ruta específica en el escritorio
-        String filePath = "C:\\Escritorio\\PruebaSubida\\" + filename;
+        String filePath = "C:\\" + filename;
 
         // Crear el archivo en la ubicación especificada
         File file = new File(filePath);

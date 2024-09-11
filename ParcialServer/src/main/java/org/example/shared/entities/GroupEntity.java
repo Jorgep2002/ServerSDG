@@ -3,15 +3,23 @@ package org.example.shared.entities;
 import java.io.Serializable;
 
 public class GroupEntity implements Serializable {
-    private Integer id; // Cambiado a Integer para permitir valores nulos
+    private int id; // Cambiado a Integer para permitir valores nulos
     private String name;
     private String description;
 
-    // Constructor vacío
-    public GroupEntity() {}
 
     // Constructor sin el ID
     public GroupEntity(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
+    // Constructor vacío
+    public GroupEntity() {
+    }
+
+    public GroupEntity(int id, String name, String description) {
+        this.id = id;
         this.name = name;
         this.description = description;
     }
