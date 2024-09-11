@@ -4,6 +4,7 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import org.example.shared.RMIInterfaces.FileService;
+import org.example.shared.entities.GroupEntity;
 
 public class FileServiceImpl extends UnicastRemoteObject implements FileService {
     private static final long serialVersionUID = 1L;
@@ -26,4 +27,5 @@ public class FileServiceImpl extends UnicastRemoteObject implements FileService 
             throw new IOException("Error saving file to the specified path", e);
         }
     }
+
 }
