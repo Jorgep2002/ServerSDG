@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface FileService extends Remote {
     // Método para subir un archivo al servidor
-    void uploadFile(String filename, byte[] fileData) throws RemoteException, IOException;
+    void uploadFileToUser(String filename, byte[] fileData, String ownerId, DirectorioEntity directorio) throws RemoteException, IOException;
     List<DirectorioEntity> getFilesByUser(String userId) throws RemoteException, SQLException;
     List<DirectorioEntity> getUsersFiles(String userId) throws RemoteException, SQLException;
 }

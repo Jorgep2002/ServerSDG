@@ -96,5 +96,31 @@ public class FileDAOImpl {
         return directorioList;
     }
 
+    public boolean createFile(String fileName, String filePath, String ownerId, Integer parentFolderId) throws RemoteException {
+        String sql = "INSERT INTO archivos (nombre, ruta, fk_id_propietario, fk_id_padre) VALUES (?, ?, ?, ?)";
+
+        try (Connection conn = mysqlConn.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, fileName);
+            stmt.setString(2, filePath);
+            stmt.setString(3, ownerId);
+
+            if (parentFolderId != null) {
+                stmt.setInt(4, parentFolderId);
+            } else {
+                stmt.setNull(4, java.sql.Types.INTEGER);
+            }
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            throw new RemoteException("Error al crear el registro del archivo: " + e.getMessage(), e);
+        }
+    }
+
+
+
 
 }

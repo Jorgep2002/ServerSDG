@@ -280,7 +280,7 @@ public class AdminDAOImpl {
     }
 
 
-    // Método para crear un nuevo directorio de tipo carpeta
+
     // Método para crear un nuevo directorio de tipo carpeta
     public boolean createFolder(String folderName, String ownerId, String folderPath, Integer parentFolderId, String groupName) throws RemoteException {
         // Verificar si el propietario existe
@@ -289,12 +289,15 @@ public class AdminDAOImpl {
             throw new RemoteException("El propietario con ID " + ownerId + " no existe.");
         }
 
+        GroupEntity group = null;
+        if (groupName != null) {
+            // Si el nombre del grupo no es nulo, buscar el grupo
+            group = getGroupByName(groupName);
 
-        GroupEntity group = getGroupByName(groupName);
-
-        // Verificar si el grupo existe
-        if (group == null) {
+            // Verificar si el grupo existe
+            if (group == null) {
                 throw new RemoteException("El grupo con el nombre " + groupName + " no existe.");
+            }
         }
 
         String sql = "INSERT INTO directorio (dir_nombre, fk_id_propietario, dir_tipo, dir_ruta, fk_id_padre, fk_id_grupo) VALUES (?, ?, 'carpeta', ?, ?, ?)";
@@ -306,15 +309,17 @@ public class AdminDAOImpl {
             stmt.setString(1, folderName);
             stmt.setString(2, ownerId);
             stmt.setString(3, folderPath);
+
             if (parentFolderId != null) {
                 stmt.setInt(4, parentFolderId);
             } else {
                 stmt.setNull(4, java.sql.Types.INTEGER);
             }
-            if (group.getId() != null) {
+
+            if (group != null && group.getId() != null) {
                 stmt.setInt(5, group.getId());
             } else {
-                stmt.setNull(5, java.sql.Types.INTEGER);
+                stmt.setNull(5, java.sql.Types.INTEGER); // Si no hay grupo, establece fk_id_grupo a NULL
             }
 
             // Ejecutar la consulta
@@ -355,6 +360,41 @@ public class AdminDAOImpl {
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RemoteException("Error en el login del usuario", e);
+        }
+    }
+
+    public String getUserDirectoryPath(String userId, String folderName) throws RemoteException {
+        String sql;
+
+        if (folderName != null && !folderName.isEmpty()) {
+            // Consulta para buscar el directorio específico que el usuario ha solicitado
+            sql = "SELECT dir_ruta FROM directorio WHERE fk_id_propietario = ? AND dir_nombre = ? AND dir_tipo = 'carpeta'";
+        } else {
+            // Consulta para buscar el directorio raíz (carpeta con el nombre del usuario)
+            sql = "SELECT dir_ruta FROM directorio WHERE fk_id_propietario = ? AND dir_nombre = ? AND dir_tipo = 'carpeta'";
+             folderName = getUserById(userId).getId(); // Obtener el nombre del usuario si no se proporciona una carpeta específica
+        }
+
+        try (Connection conn = mysqlConn.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, userId);
+            stmt.setString(2, folderName);
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                // Si encuentra el directorio solicitado o la carpeta raíz del usuario, devuelve el path
+                return rs.getString("dir_ruta");
+            } else if (folderName.equals(getUserById(userId).getId())) {
+                // Si no encuentra el directorio solicitado, y está verificando la carpeta raíz, lanza una excepción
+                throw new RemoteException("No se encontró el directorio raíz del usuario.");
+            } else {
+                // Si no se encontró la carpeta especificada, vuelve a verificar por la carpeta raíz del usuario
+                return getUserDirectoryPath(userId, null);
+            }
+
+        } catch (SQLException e) {
+            throw new RemoteException("Error al obtener el directorio: " + e.getMessage(), e);
         }
     }
 

@@ -153,7 +153,44 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService 
     }
     public boolean createUser(UserEntity user) throws RemoteException{
         try {;
-            return adminDAO.createUser(user);
+            boolean userCreated =  adminDAO.createUser(user);
+
+            if (userCreated) {
+                // Crear la carpeta para el usuario en el sistema de archivos local
+                File userDirectory = new File(baseDirectory, user.getId());
+                if (!userDirectory.exists()) {
+                    boolean isDirectoryCreated = userDirectory.mkdirs(); // Crear la carpeta
+
+                    if (isDirectoryCreated) {
+                        System.out.println("Carpeta del usuario creada: " + userDirectory.getAbsolutePath());
+
+                        // Guardar el directorio en la base de datos
+                        boolean isFolderSaved = adminDAO.createFolder(
+                                user.getId(),
+                                user.getId(),
+                                userDirectory.getAbsolutePath(),
+                                null,
+                                null
+                        );
+
+                        if (isFolderSaved) {
+                            return true; // El usuario y la carpeta fueron creados y guardados exitosamente
+                        } else {
+                            System.out.println("Error al guardar el directorio del usuario en la base de datos.");
+                            return false; // Error al guardar el directorio
+                        }
+                    } else {
+                        System.out.println("Error al crear la carpeta para el usuario.");
+                        return false; // Error al crear la carpeta
+                    }
+                } else {
+                    System.out.println("La carpeta del usuario ya existe: " + userDirectory.getAbsolutePath());
+                    return true; // La carpeta ya existía, pero el usuario fue creado
+                }
+            } else {
+                return false; // No se pudo crear el usuario
+            }
+
         } catch (RemoteException e) {
             System.out.println("Error al crear usuario: " + e.getMessage());
             throw new RemoteException("Error al crear usuario", e);
