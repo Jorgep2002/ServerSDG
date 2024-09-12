@@ -113,26 +113,20 @@ public class AdminDAOImpl {
 
 
 
-
-
-
-
     // Método para crear un grupo
-    public boolean createGroup(GroupEntity group) throws RemoteException {
+    public boolean createGroup(String grp_nombre, String grp_descripcion) throws RemoteException {
         String sql = "INSERT INTO grupo (grp_nombre, grp_descripcion) VALUES (?, ?)";
 
-        try (Connection conn = mysqlConn.getConnection(); // Usa la conexión de mysqlDatabase
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = mysqlConn.getConnection()) {
+            // Crear el grupo
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, grp_nombre);
+                stmt.setString(2, grp_descripcion);
 
-            // Asignar valores a los campos de la consulta SQL
-            stmt.setString(1, group.getName());
-            stmt.setString(2, group.getDescription());
+                int rowsAffected = stmt.executeUpdate();
 
-            // Ejecutar la consulta
-            int rowsAffected = stmt.executeUpdate();
-
-            // Retorna true si se ha creado el grupo (una fila afectada)
-            return rowsAffected > 0;
+                return  rowsAffected > 0;
+            }
 
         } catch (SQLException e) {
             System.out.println("Error al crear el grupo");
@@ -140,6 +134,7 @@ public class AdminDAOImpl {
             throw new RemoteException("Error al crear el grupo: " + e.getMessage());
         }
     }
+
 
 
     // Método para verificar si un grupo existe por ID
@@ -259,4 +254,111 @@ public class AdminDAOImpl {
 
         return groupList;
     }
+
+    public GroupEntity getGroupByName(String nombre) throws RemoteException{
+        try (Connection conn = mysqlConn.getConnection()) {
+            String query = "SELECT * FROM grupo WHERE grp_nombre = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setString(1, nombre);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        // Crear un objeto GroupEntity a partir de los datos de la base de datos
+                        return new GroupEntity(
+                                rs.getInt("id_grupo"),
+                                rs.getString("grp_nombre"),
+                                rs.getString("grp_descripcion")
+                        );
+                    }
+                    // Retorna null si no se encuentra el grupo
+                    return null;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RemoteException("Error al obtener el grupo por nombre", e);
+        }
+    }
+
+
+    // Método para crear un nuevo directorio de tipo carpeta
+    // Método para crear un nuevo directorio de tipo carpeta
+    public boolean createFolder(String folderName, String ownerId, String folderPath, Integer parentFolderId, String groupName) throws RemoteException {
+        // Verificar si el propietario existe
+        UserEntity owner = getUserById(ownerId);
+        if (owner == null) {
+            throw new RemoteException("El propietario con ID " + ownerId + " no existe.");
+        }
+
+
+        GroupEntity group = getGroupByName(groupName);
+
+        // Verificar si el grupo existe
+        if (group == null) {
+                throw new RemoteException("El grupo con el nombre " + groupName + " no existe.");
+        }
+
+        String sql = "INSERT INTO directorio (dir_nombre, fk_id_propietario, dir_tipo, dir_ruta, fk_id_padre, fk_id_grupo) VALUES (?, ?, 'carpeta', ?, ?, ?)";
+
+        try (Connection conn = mysqlConn.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            // Asignar los valores a la consulta
+            stmt.setString(1, folderName);
+            stmt.setString(2, ownerId);
+            stmt.setString(3, folderPath);
+            if (parentFolderId != null) {
+                stmt.setInt(4, parentFolderId);
+            } else {
+                stmt.setNull(4, java.sql.Types.INTEGER);
+            }
+            if (group.getId() != null) {
+                stmt.setInt(5, group.getId());
+            } else {
+                stmt.setNull(5, java.sql.Types.INTEGER);
+            }
+
+            // Ejecutar la consulta
+            int rowsAffected = stmt.executeUpdate();
+
+            // Retorna true si la carpeta se ha creado exitosamente
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            System.out.println("Error al crear la carpeta");
+            e.printStackTrace();
+            throw new RemoteException("Error al crear la carpeta: " + e.getMessage());
+        }
+    }
+
+
+
+
+    public boolean login(UserEntity user) throws RemoteException {
+        try (Connection conn = mysqlConn.getConnection()) {
+            String query = "SELECT * FROM Usuario WHERE id_usuario = ? AND usu_contrasena = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setString(1, user.getId());
+                stmt.setString(2, user.getPassword());
+
+                // Ejecutar la consulta
+                try (ResultSet rs = stmt.executeQuery()) {
+                    // Verificar si el ResultSet contiene algún registro
+                    if (rs.next()) {
+                        // Si el resultado tiene una fila, el usuario ha sido autenticado correctamente
+                        return true;
+                    } else {
+                        // Si no hay filas, las credenciales son incorrectas
+                        return false;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RemoteException("Error en el login del usuario", e);
+        }
+    }
+
+
+
+
 }

@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.SQLException;
 import java.util.List;
 
 public class AuthServiceImpl extends UnicastRemoteObject implements AuthService {
@@ -26,12 +27,12 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService 
     @Override
     public boolean login(UserEntity user) throws RemoteException {
 
-        //Llamar al metodo createUser del DAO
-
-            System.out.println("username = " + user.getId());
-            System.out.println("password = " + user.getPassword());
-            return true;
-
+        try{
+            return adminDAO.login(user);
+        }catch (RemoteException e){
+            System.out.println("Error al loguearse: " + e.getMessage());
+            throw new RemoteException("Error al iniciar sesion", e);
+        }
     }
 
 
@@ -39,31 +40,49 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService 
 
 
     @Override
-    public boolean createGroup(GroupEntity group) throws RemoteException {
-        try {
-            // Llamar al método createGroup del DAO para crear el grupo
-            boolean isGroupCreated = adminDAO.createGroup(group);
+    public boolean createGroup(String nombre, String descripcion, UserEntity user) throws RemoteException {
+        // Llamar al método createGroup del DAO para crear el grupo en la base de datos
+        boolean isGroupCreated = adminDAO.createGroup(nombre, descripcion);
 
-            if (isGroupCreated) {
-                // Crear la carpeta correspondiente en el sistema de archivos
-                File groupDirectory = new File(baseDirectory, group.getName());
-                if (!groupDirectory.exists()) {
-                    if (!groupDirectory.mkdirs()) {
-                        throw new IOException("No se pudo crear el directorio para el grupo: " + group.getName());
+
+        if (isGroupCreated) {
+            // Crear la carpeta correspondiente en el sistema de archivos
+            File groupDirectory = new File(baseDirectory, nombre);
+            if (!groupDirectory.exists()) {
+                boolean isDirectoryCreated = groupDirectory.mkdirs(); // Crear la carpeta
+
+                if (isDirectoryCreated) {
+                    System.out.println("Carpeta del grupo creada: " + groupDirectory.getAbsolutePath());
+
+                    // Guardar el directorio en la base de datos usando el método createFolder
+                    boolean isFolderSaved = adminDAO.createFolder(
+                            nombre,
+                            user.getId(),
+                            groupDirectory.getAbsolutePath(),
+                            null,
+                            nombre
+                    );
+
+                    if (isFolderSaved) {
+                        return true; // El grupo y la carpeta fueron creados y guardados exitosamente
+                    } else {
+                        System.out.println("Error al guardar el directorio del grupo en la base de datos.");
+                        return false; // Error al guardar el directorio
                     }
+                } else {
+                    System.out.println("Error al crear la carpeta para el grupo.");
+                    return false; // Error al crear la carpeta
                 }
+            } else {
+                System.out.println("La carpeta del grupo ya existe: " + groupDirectory.getAbsolutePath());
+                return true; // La carpeta ya existía, pero el grupo fue creado
             }
-
-            // Retornar el resultado de la creación del grupo
-            return isGroupCreated;
-
-        } catch (RemoteException e) {
-            System.out.println("Error al crear el grupo: " + e.getMessage());
-            throw new RemoteException("Error al crear el grupo", e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } else {
+            System.out.println("Error al crear el grupo en la base de datos.");
+            return false;
         }
     }
+
 
     @Override
     public boolean addUserToGroup(int groudId, String userId) throws RemoteException {

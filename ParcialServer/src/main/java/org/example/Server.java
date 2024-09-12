@@ -30,7 +30,7 @@ public class Server {
             System.setProperty("java.rmi.server.hostname", ip);
 
             // Crear e implementar servicios
-            AuthServiceImpl authService = new AuthServiceImpl("");
+            AuthServiceImpl authService = new AuthServiceImpl("C:\\Users\\jaime\\OneDrive\\Documentos\\UPB - SEMESTRE VIII\\Sistemas_Distribuidos\\Parcial");
             FileServiceImpl fileService = new FileServiceImpl();
 
             // Iniciar el registro RMI

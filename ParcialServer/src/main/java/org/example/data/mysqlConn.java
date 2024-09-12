@@ -9,7 +9,7 @@ public class mysqlConn {
     // Datos de conexión a la base de datos
     private static final String DB_URL = "jdbc:mysql://localhost:3306/ds_app";
     private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "";  // Sin contraseña
+    private static final String DB_PASSWORD = "jaimeandres03";  // Sin contraseña
 
     // Método para obtener una nueva conexión
     public static Connection getConnection() {
