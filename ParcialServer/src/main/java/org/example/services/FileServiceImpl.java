@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.example.infrastructure.FileDAOImpl;
 import org.example.shared.RMIInterfaces.FileService;
+import org.example.shared.entities.DirectorioEntity;
 
 public class FileServiceImpl extends UnicastRemoteObject implements FileService {
     private static final long serialVersionUID = 1L;
@@ -33,13 +34,22 @@ public class FileServiceImpl extends UnicastRemoteObject implements FileService 
             throw new IOException("Error saving file to the specified path", e);
         }
     }
-    public List<String> getFilesByUser(String userId) throws RemoteException, SQLException {
+    public List<DirectorioEntity> getFilesByUser(String userId) throws RemoteException, SQLException {
         try {
             System.out.println(fileDAO.getFilesByUser(userId));
             return fileDAO.getFilesByUser(userId);
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RemoteException("Error retrieving files from the database", e);
+            throw new RemoteException("Error al traer archvios de grupo", e);
+        }
+    }
+    public List<DirectorioEntity> getUsersFiles(String userId) throws RemoteException, SQLException {
+        try {
+            System.out.println(fileDAO.getUsersFiles(userId));
+            return fileDAO.getUsersFiles(userId);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RemoteException("Error al traer los archivos del usuario", e);
         }
     }
 }

@@ -1,6 +1,7 @@
 package org.example.shared.RMIInterfaces;
 
-import java.io.File;
+import org.example.shared.entities.DirectorioEntity;
+
 import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -10,5 +11,6 @@ import java.util.List;
 public interface FileService extends Remote {
     // Método para subir un archivo al servidor
     void uploadFile(String filename, byte[] fileData) throws RemoteException, IOException;
-    List<String> getFilesByUser(String userId) throws RemoteException, SQLException;
+    List<DirectorioEntity> getFilesByUser(String userId) throws RemoteException, SQLException;
+    List<DirectorioEntity> getUsersFiles(String userId) throws RemoteException, SQLException;
 }
