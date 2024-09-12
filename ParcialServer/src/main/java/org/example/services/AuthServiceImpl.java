@@ -16,12 +16,14 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService 
 
     private final AdminDAOImpl adminDAO;
     private final String baseDirectory;
-
+    private final String pathDB;
     public AuthServiceImpl(String baseDirectory) throws RemoteException {
         super();
         this.adminDAO = new AdminDAOImpl();
         this.baseDirectory = baseDirectory;
+        this.pathDB ="c:/Escritorio/pruebaSubida/";
     }
+
 
 
     @Override
@@ -58,7 +60,7 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService 
                     boolean isFolderSaved = adminDAO.createFolder(
                             nombre,
                             user.getId(),
-                            groupDirectory.getAbsolutePath(),
+                            this.pathDB.concat(nombre),
                             null,
                             nombre
                     );
@@ -164,11 +166,12 @@ public class AuthServiceImpl extends UnicastRemoteObject implements AuthService 
                     if (isDirectoryCreated) {
                         System.out.println("Carpeta del usuario creada: " + userDirectory.getAbsolutePath());
 
+
                         // Guardar el directorio en la base de datos
                         boolean isFolderSaved = adminDAO.createFolder(
                                 user.getId(),
                                 user.getId(),
-                                userDirectory.getAbsolutePath(),
+                                this.pathDB.concat(user.getId()),
                                 null,
                                 null
                         );
